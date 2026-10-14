@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>The Dark Realm - Winter & Fire</title>
+  <style>
+    :root {
+      --accent: #ff3355;
+      --accent-glow: rgba(255, 0, 60, 0.45);
+      --accent-gradient: linear-gradient(135deg, #ff003c, #80001a);
+      --frost-blue: #38bdf8;
+      --bg-glow-1: #80001a;
+      --bg-glow-2: #1e0521;
+      --flame-stop-1: #ff1a40;
+      --flame-stop-2: #b30024;
+      --flame-stop-3: #40000a;
+    }
+
+    body.theme-purple {
+      --accent: #c084fc;
+      --accent-glow: rgba(192, 132, 252, 0.45);
+      --accent-gradient: linear-gradient(135deg, #a855f7, #581c87);
+      --bg-glow-1: #581c87;
+      --bg-glow-2: #18002e;
+      --flame-stop-1: #c084fc;
+      --flame-stop-2: #7e22ce;
+      --flame-stop-3: #2e1065;
+    }
+
+    body.theme-blue {
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.45);
+      --accent-gradient: linear-gradient(135deg, #0ea5e9, #0369a1);
+      --bg-glow-1: #0369a1;
+      --bg-glow-2: #021a2e;
+      --flame-stop-1: #38bdf8;
+      --flame-stop-2: #0284c7;
+      --flame-stop-3: #082f49;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #020103;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    body::before, body::after {
+      content: "";
+      position: absolute;
+      width: 550px;
+      height: 550px;
+      border-radius: 50%;
+      filter: blur(170px);
+      z-index: 0;
+      animation: pulse 7s infinite alternate ease-in-out;
+      transition: background 0.5s ease;
+    }
+
+    body::before {
+      background: var(--bg-glow-1);
+      top: -5%;
+      left: 2%;
+    }
+
+    body::after {
+      background: var(--bg-glow-2);
+      bottom: -5%;
+      right: 2%;
+      animation-delay: 3.5s;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.8); opacity: 0.3; }
+      100% { transform: scale(1.25); opacity: 0.65; }
+    }
+
+    #fogContainer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 99;
+      opacity: 0;
+      transition: opacity 1.2s ease-in-out;
+      overflow: hidden;
+    }
+
+    #fogContainer.active {
+      opacity: 1;
+    }
+
+    .fog-cloud {
+      position: absolute;
+      width: 130vw;
+      height: 85vh;
+      border-radius: 50%;
+      filter: blur(60px);
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .fog-cloud-1 {
+      top: -15vh;
+      left: -130vw;
+      background: radial-gradient(ellipse at center, var(--accent-glow) 0%, rgba(20, 5, 20, 0.3) 50%, transparent 75%);
+      animation: fogPassRight 20s linear infinite;
+    }
+
+    .fog-cloud-2 {
+      bottom: -15vh;
+      right: -130vw;
+      background: radial-gradient(ellipse at center, rgba(30, 60, 90, 0.35) 0%, rgba(10, 0, 15, 0.3) 55%, transparent 75%);
+      animation: fogPassLeft 24s linear infinite;
+      animation-delay: -7s;
+    }
+
+    @keyframes fogPassRight {
+      0% { transform: translateX(0); opacity: 0; }
+      15% { opacity: 0.85; }
+      85% { opacity: 0.85; }
+      100% { transform: translateX(260vw); opacity: 0; }
+    }
+
+    @keyframes fogPassLeft {
+      0% { transform: translateX(0); opacity: 0; }
+      15% { opacity: 0.85; }
+      85% { opacity: 0.85; }
+      100% { transform: translateX(-260vw); opacity: 0; }
+    }
+
+    #embersContainer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .click-particle {
+      position: fixed;
+      pointer-events: none;
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent), 0 0 15px var(--accent);
+      z-index: 9999;
+      animation: sparkFade 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+
+    @keyframes sparkFade {
+      0% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0); opacity: 0; }
+    }
+
+    .spell-fire {
+      background: linear-gradient(0deg, #ff0000 0%, #ff8c00 50%, #ffee00 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: bold;
+      animation: fireFlicker 0.8s infinite alternate ease-in-out;
+      display: inline-block;
+    }
+
+    @keyframes fireFlicker {
+      0% { filter: drop-shadow(0 0 2px #ff3300) drop-shadow(0 -2px 6px #ff8c00); }
+      100% { filter: drop-shadow(0 0 6px #ff0000) drop-shadow(0 -4px 10px #ffee00); }
+    }
+
+    .spell-shake {
+      display: inline-block;
+      font-weight: bold;
+      color: var(--accent);
+      animation: shakeText 0.15s infinite;
+    }
+
+    @keyframes shakeText {
+      0% { transform: translate(1px, 1px) rotate(0deg); }
+      20% { transform: translate(-2px, 0px) rotate(-1deg); }
+      40% { transform: translate(2px, -1px) rotate(1deg); }
+      60% { transform: translate(-1px, 2px) rotate(0deg); }
+      80% { transform: translate(1px, -2px) rotate(1deg); }
+      100% { transform: translate(-1px, 1px) rotate(-1deg); }
+    }
+
+    .spell-glitch {
+      display: inline-block;
+      color: #ffffff;
+      font-weight: bold;
+      text-shadow: -2px 0 #00ffff, 2px 0 #ff00ff;
+      animation: glitchAnim 0.8s infinite alternate;
+    }
+
+    @keyframes glitchAnim {
+      0% { text-shadow: -2px 0 #00ffff, 2px 0 #ff00ff; transform: skew(0deg); }
+      25% { text-shadow: 2px 0 #00ffff, -2px 0 #ff00ff; transform: skew(3deg); }
+      50% { text-shadow: -1px 0 #00ffff, 1px 0 #ff00ff; transform: skew(-2deg); }
+      75% { text-shadow: 3px 0 #00ffff, -3px 0 #ff00ff; transform: skew(1deg); }
+      100% { text-shadow: -2px 0 #00ffff, 2px 0 #ff00ff; transform: skew(-1deg); }
+    }
+
+    .app-layout {
+      position: relative;
+      z-index: 2;
+      width: 95%;
+      max-width: 1400px;
+      height: 90vh;
+      height: 90dvh;
+      display: flex;
+      gap: 16px;
+    }
+
+    .bg-fire-icon {
+      position: absolute;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.15;
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+      transition: opacity 0.3s;
+    }
+
+    .sidebar {
+      width: 320px;
+      background: 
+        radial-gradient(circle at 10% 10%, var(--accent-glow), transparent 45%),
+        radial-gradient(circle at 90% 90%, rgba(56, 189, 248, 0.08), transparent 40%),
+        linear-gradient(180deg, rgba(12, 3, 7, 0.98) 0%, rgba(5, 1, 3, 0.98) 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 20px;
+      border: 1px solid var(--accent);
+      box-shadow: 0 0 35px var(--accent-glow), inset 0 0 15px rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex-shrink: 0;
+      transition: transform 0.3s ease-in-out, border-color 0.5s ease, box-shadow 0.5s ease;
+      position: relative;
+    }
+
+    .sidebar-header {
+      background: rgba(4, 1, 2, 0.98);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--accent-glow);
+      z-index: 2;
+    }
+
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .sidebar-avatar {
+      font-size: 1.3rem;
+      filter: drop-shadow(0 0 6px var(--accent));
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .theme-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--accent);
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s, border-color 0.5s;
+    }
+
+    .soundscape-panel {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--accent-glow);
+      background: linear-gradient(180deg, #070104 0%, #0e0207 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 2;
+    }
+
+    .soundscape-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent);
+      font-weight: bold;
+      opacity: 0.95;
+    }
+
+    .soundscape-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .sound-chip {
+      background: linear-gradient(135deg, #180208 0%, #050002 100%);
+      border: 1px solid var(--accent-glow);
+      color: var(--accent);
+      padding: 5px 9px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      user-select: none;
+      transition: all 0.25s ease;
+      box-shadow: inset 0 0 6px rgba(0,0,0,0.9);
+      font-weight: 600;
+    }
+
+    .sound-chip:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    .sound-chip.active {
+      background: var(--accent-gradient);
+      color: #ffffff;
+      border-color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .chat-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px 6px;
+      z-index: 2;
+    }
+
+    .chat-section-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--accent);
+      font-weight: 800;
+      opacity: 0.85;
+    }
+
+    .chat-btn-wrapper {
+      position: relative;
+      display: inline-flex;
+      gap: 6px;
+    }
+
+    .action-btn-small {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--accent);
+      color: #ffffff;
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s, border-color 0.5s;
+    }
+
+    .action-btn-small:hover {
+      background: var(--accent);
+    }
+
+    .chat-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      z-index: 2;
+    }
+
+    .chat-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      cursor: pointer;
+      transition: background 0.2s;
+      position: relative;
+    }
+
+    .chat-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .chat-item.active {
+      background: rgba(255, 255, 255, 0.1);
+      border-left: 4px solid var(--accent);
+    }
+
+    .item-avatar {
+      font-size: 1.3rem;
+      width: 36px;
+      height: 36px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--accent-glow);
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .earth-globe-svg {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: block;
+      filter: drop-shadow(0 0 5px var(--accent-glow));
+    }
+
+    .avatar-status-badge {
+      position: absolute;
+      bottom: -1px;
+      right: -1px;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #777; /* Default offline state */
+      border: 2px solid #060204;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .item-details {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .item-name {
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .item-subtext {
+      font-size: 0.75rem;
+      color: var(--accent);
+      opacity: 0.7;
+    }
+
+    .chat-container {
+      flex: 1;
+      width: 100%;
+      background: 
+        radial-gradient(ellipse at 50% 0%, var(--accent-glow) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 100%, rgba(10, 40, 70, 0.15) 0%, transparent 50%),
+        linear-gradient(180deg, rgba(8, 2, 5, 0.96) 0%, rgba(3, 1, 2, 0.98) 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 20px;
+      border: 1px solid var(--accent);
+      box-shadow: 0 0 45px var(--accent-glow), inset 0 0 20px rgba(0, 0, 0, 0.95);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      transition: border-color 0.5s ease, box-shadow 0.5s ease;
+    }
+
+    .chat-header {
+      background: rgba(4, 1, 2, 0.98);
+      color: var(--accent);
+      padding: 14px 18px;
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: 2px;
+      border-bottom: 1px solid var(--accent-glow);
+      text-shadow: 0 0 12px var(--accent-glow);
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      text-transform: uppercase;
+      z-index: 2;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--accent);
+      color: #ffffff;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .messages-wrapper {
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .messages-area {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background-color: transparent;
+      background-image: 
+        radial-gradient(var(--accent-glow) 1px, transparent 1px),
+        radial-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
+      background-position: 0 0, 12px 12px;
+      z-index: 2;
+    }
+
+    /* Scroll to bottom button style */
+    .scroll-bottom-btn {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent-gradient);
+      color: #ffffff;
+      border: 1px solid var(--accent);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      z-index: 10;
+      display: none;
+      animation: bounceBtn 1.5s infinite;
+    }
+
+    @keyframes bounceBtn {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-3px); }
+    }
+
+    .message {
+      max-width: 75%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.98rem;
+      line-height: 1.35;
+      word-wrap: break-word;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+    }
+
+    .message.sent {
+      align-self: flex-end;
+      background: var(--accent-gradient);
+      color: #ffffff;
+      border-top-right-radius: 0;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    .message.received {
+      align-self: flex-start;
+      background: rgba(18, 6, 10, 0.92);
+      color: #f0e6e8;
+      border: 1px solid var(--accent-glow);
+      border-top-left-radius: 0;
+    }
+
+    .message.ghost-decay {
+      animation: ghostFadeOut 10s forwards linear;
+    }
+
+    @keyframes ghostFadeOut {
+      0% { opacity: 1; filter: blur(0px); }
+      60% { opacity: 0.7; filter: blur(1px); }
+      85% { opacity: 0.2; filter: blur(4px); }
+      100% { opacity: 0; filter: blur(8px); transform: translateY(-10px); }
+    }
+
+    .msg-sender-name {
+      font-size: 0.75rem;
+      font-weight: bold;
+      opacity: 0.85;
+      margin-bottom: 2px;
+    }
+
+    .msg-footer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+      gap: 8px;
+    }
+
+    .msg-time {
+      font-size: 0.68rem;
+      opacity: 0.75;
+      font-style: italic;
+    }
+
+    .msg-footer-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+    }
+
+    .delete-msg-btn {
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: 1.2rem;
+      font-weight: 900;
+      line-height: 1;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+      transition: transform 0.2s, color 0.2s;
+    }
+
+    .delete-msg-btn:hover {
+      transform: scale(1.3);
+      color: #ff3355;
+    }
+
+    .typing-bar {
+      padding: 4px 18px;
+      font-size: 0.75rem;
+      color: var(--accent);
+      font-style: italic;
+      background: rgba(4, 1, 2, 0.95);
+      min-height: 20px;
+      opacity: 0.85;
+      z-index: 2;
+    }
+
+    .input-toolbar {
+      display: flex;
+      gap: 8px;
+      padding: 6px 12px;
+      background: rgba(2, 0, 1, 0.98);
+      border-top: 1px solid var(--accent-glow);
+      align-items: center;
+      z-index: 2;
+    }
+
+    .toolbar-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--accent-glow);
+      color: #ffffff;
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .toolbar-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .input-area {
+      display: flex;
+      padding: 8px 12px 10px;
+      background: rgba(4, 1, 2, 0.95);
+      gap: 8px;
+      align-items: center;
+      width: 100%;
+      box-sizing: border-box;
+      z-index: 2;
+    }
+
+    .input-area input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--accent-glow);
+      border-radius: 30px;
+      outline: none;
+      font-size: 0.9rem;
+      color: #ffffff;
+    }
+
+    .input-area button {
+      flex-shrink: 0;
+      padding: 10px 16px;
+      background: var(--accent-gradient);
+      color: #ffffff;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.85rem;
+      white-space: nowrap;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .ghost-toggle {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--accent);
+      font-size: 0.75rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      user-select: none;
+      position: relative;
+    }
+
+    .ghost-toggle input { display: none; }
+    .ghost-toggle .checkbox-custom {
+      width: 16px;
+      height: 16px;
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+    }
+
+    .ghost-toggle input:checked + .checkbox-custom {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    @media (max-width: 768px) {
+      .app-layout {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        gap: 0;
+      }
+
+      .sidebar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 85%;
+        max-width: 320px;
+        height: 100%;
+        z-index: 100;
+        border-radius: 0;
+        border-right: 1px solid var(--accent);
+        transform: translateX(-100%);
+        box-shadow: 10px 0 30px rgba(0,0,0,0.8);
+      }
+
+      .app-layout.show-sidebar .sidebar {
+        transform: translateX(0);
+      }
+
+      .chat-container {
+        width: 100vw;
+        height: 100%;
+        border-radius: 0;
+        border: none;
+      }
+
+      .mobile-menu-btn {
+        display: inline-flex;
+      }
+    }
+  </style>
+</head>
+<body id="bodyRoot">
+
+  <div id="fogContainer">
+    <div class="fog-cloud fog-cloud-1"></div>
+    <div class="fog-cloud fog-cloud-2"></div>
+  </div>
+
+  <div id="embersContainer"></div>
+
+  <audio id="darkPianoAudio" src="Music/tramp963-melancholic-piano-music-267308.mp3" loop preload="auto" style="display:none;"></audio>
+
+  <div class="app-layout" id="appLayout">
+    <aside class="sidebar" id="sidebarElement">
+      <div class="sidebar-header">
+        <div class="sidebar-user" onclick="changeUsername()" title="Click to change username">
+          <span class="sidebar-avatar">💀</span>
+          <span id="displayUsername">Loading...</span>
+        </div>
+        <div class="header-actions">
+          <button class="theme-btn" id="fogBtn" onclick="toggleFog()" title="Toggle Dark Fog">🌫️ Fog</button>
+          <button class="theme-btn" onclick="cycleTheme()" title="Switch Theme Essence">⚔️ Theme</button>
+        </div>
+      </div>
+
+      <div class="soundscape-panel">
+        <span class="soundscape-title">Realm Soundscape</span>
+        <div class="soundscape-controls">
+          <div class="sound-chip" id="chipWind" onclick="toggleWind()" title="Toggle Soft Passing Gale">
+            <span class="chip-emoji">🌪️</span> Wind
+          </div>
+          <div class="sound-chip" id="chipBell" onclick="togglePianoMelody()" title="Toggle Dark Whispering Piano Melancholy">
+            <span class="chip-emoji">🕯️</span> Dark Piano
+          </div>
+          <div class="sound-chip" id="chipEmbers" onclick="toggleEmbers()" title="Toggle Roaring Hearth Fire">
+            <span class="chip-emoji">🪵</span> Fire
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-list" id="chatList">
+        <div class="chat-section-header">
+          <span class="chat-section-title">Forsaken Halls</span>
+        </div>
+        <div class="chat-item active" id="chat-item-global" onclick="switchChat('global', 'Global Chat', getEarthMapSVG())">
+          <div class="item-avatar">
+            <span id="globalAvatarContainer"></span>
+            <span class="avatar-status-badge" id="globalOnlineIndicator"></span>
+          </div>
+          <div class="item-details">
+            <span class="item-name">Global Chat</span>
+            <span class="item-subtext">Public lobby</span>
+          </div>
+        </div>
+
+        <div class="chat-section-header">
+          <span class="chat-section-title">Bound Souls</span>
+          <div class="chat-btn-wrapper">
+            <button class="action-btn-small" onclick="resetRemovedContacts()" title="Restore hidden contacts">Reset</button>
+            <button class="action-btn-small" onclick="openPersonalChatPrompt()">+ Chat</button>
+          </div>
+        </div>
+        <div id="usersContainer"></div>
+      </div>
+    </aside>
+
+    <main class="chat-container" id="chatContainerElement">
+      <div class="chat-header">
+        <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">☰ Contacts</button>
+        <span id="currentChatAvatar"></span>
+        <span id="currentChatTitle">Global Chat</span>
+      </div>
+
+      <div class="messages-wrapper">
+        <div class="messages-area" id="messagesArea"></div>
+        <button class="scroll-bottom-btn" id="scrollBottomBtn" onclick="scrollToBottom()">↓ New Message</button>
+      </div>
+
+      <div class="typing-bar" id="typingBar"></div>
+
+      <div class="input-toolbar">
+        <button class="toolbar-btn" onclick="convertInputToGothic()" title="Convert input text to Gothic font">𝕲 Gothic</button>
+        <button class="toolbar-btn" onclick="insertSpellTag('fire')" title="Wrap with Fire Spell">[fire]</button>
+        <button class="toolbar-btn" onclick="insertSpellTag('shake')" title="Wrap with Shake Spell">[shake]</button>
+        <button class="toolbar-btn" onclick="insertSpellTag('glitch')" title="Wrap with Glitch Spell">[glitch]</button>
+      </div>
+
+      <div class="input-area">
+        <label class="ghost-toggle">
+          <input type="checkbox" id="ghostCheckbox">
+          <span class="checkbox-custom">👻</span> Ghost
+        </label>
+        <input type="text" id="messageInput" placeholder="Send a message..." oninput="handleTypingInput()" onkeydown="handleKeyPress(event)">
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC36ITkbeDKf_y0OVXGXbA80G7k024UB2Q",
+      authDomain: "dark-realm-chat.firebaseapp.com",
+      projectId: "dark-realm-chat",
+      storageBucket: "dark-realm-chat.firebasestorage.app",
+      messagingSenderId: "1039225212316",
+      appId: "1:1039225212316:web:67f2188eac7af9725e4c59",
+      measurementId: "G-3XWVWVWSJYZD"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    function getEarthMapSVG() {
+      return `
+        <svg class="earth-globe-svg" viewBox="0 0 100 100">
+          <defs>
+            <radialGradient id="earthGradHeader" cx="35%" cy="35%" r="65%">
+              <stop offset="0%" stop-color="var(--flame-stop-1)" />
+              <stop offset="60%" stop-color="var(--flame-stop-2)" />
+              <stop offset="100%" stop-color="var(--flame-stop-3)" />
+            </radialGradient>
+          </defs>
+          <circle cx="50" cy="50" r="46" fill="url(#earthGradHeader)" stroke="var(--accent)" stroke-width="2.5"/>
+          <ellipse cx="50" cy="50" rx="45" ry="16" fill="none" stroke="var(--accent-glow)" stroke-width="1.2"/>
+          <ellipse cx="50" cy="50" rx="18" ry="45" fill="none" stroke="var(--accent-glow)" stroke-width="1.2"/>
+          <line x1="5" y1="50" x2="95" y2="50" stroke="var(--accent-glow)" stroke-width="1.2"/>
+          <path d="M 22,24 Q 32,20 35,32 T 30,48 T 22,65 T 26,80 T 16,68 T 14,40 Z" fill="#050002" stroke="var(--accent)" stroke-width="1.5" />
+          <path d="M 46,20 Q 58,16 64,28 T 58,45 T 50,76 T 43,55 T 42,34 Z" fill="#050002" stroke="var(--accent)" stroke-width="1.5" />
+          <path d="M 66,18 Q 82,20 88,36 T 78,50 T 68,40 Z" fill="#050002" stroke="var(--accent)" stroke-width="1.5" />
+          <path d="M 74,62 Q 85,60 86,72 T 75,78 Z" fill="#050002" stroke="var(--accent)" stroke-width="1.5" />
+        </svg>
+      `;
+    }
+
+    document.getElementById('currentChatAvatar').innerHTML = getEarthMapSVG();
+    document.getElementById('globalAvatarContainer').innerHTML = getEarthMapSVG();
+
+    function injectBackgroundFlames(containerId, count) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      const flameSVG = `
+        <svg viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M50 0C50 0 65 30 65 50C65 58 60 65 60 65C60 65 75 45 85 60C95 75 90 95 75 110C60 125 35 120 20 105C5 90 5 65 20 45C25 38 30 35 30 35C30 35 25 50 32 58C38 65 45 60 45 60C45 60 38 40 50 0Z" fill="url(#bgFlameGrad)"/>
+          <defs>
+            <linearGradient id="bgFlameGrad" x1="50" y1="0" x2="50" y2="120" gradientUnits="userSpaceOnUse">
+              <stop stop-color="var(--flame-stop-1)" stop-opacity="0.9"/>
+              <stop offset="0.6" stop-color="var(--flame-stop-2)" stop-opacity="0.6"/>
+              <stop offset="1" stop-color="var(--flame-stop-3)" stop-opacity="0.2"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      `;
+
+      for (let i = 0; i < count; i++) {
+        const flame = document.createElement('div');
+        flame.className = 'bg-fire-icon';
+        flame.innerHTML = flameSVG;
+        
+        const size = Math.floor(Math.random() * 22 + 24) + 'px';
+        const top = Math.floor(Math.random() * 85 + 5) + '%';
+        const left = Math.floor(Math.random() * 85 + 5) + '%';
+        const tilt = Math.floor(Math.random() * 60 - 30) + 'deg';
+        const opacity = (Math.random() * 0.12 + 0.08).toFixed(2);
+
+        flame.style.width = size;
+        flame.style.height = size;
+        flame.style.top = top;
+        flame.style.left = left;
+        flame.style.transform = `rotate(${tilt})`;
+        flame.style.opacity = opacity;
+
+        container.appendChild(flame);
+      }
+    }
+
+    injectBackgroundFlames('sidebarElement', 7);
+    injectBackgroundFlames('chatContainerElement', 12);
+
+    document.addEventListener('click', (e) => {
+      createParticleBurst(e.clientX, e.clientY);
+    });
+
+    function createParticleBurst(x, y) {
+      const particleCount = 12;
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'click-particle';
+        document.body.appendChild(particle);
+
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 40 + 20;
+        const dx = Math.cos(angle) * speed + 'px';
+        const dy = Math.sin(angle) * speed + 'px';
+
+        particle.style.left = x + 'px';
+        particle.style.top = y + 'px';
+        particle.style.setProperty('--dx', dx);
+        particle.style.setProperty('--dy', dy);
+
+        setTimeout(() => {
+          particle.remove();
+        }, 600);
+      }
+    }
+
+    let currentUserId = localStorage.getItem('realm_user_id');
+    let currentUsername = localStorage.getItem('realm_username');
+
+    if (!currentUserId) {
+      currentUserId = 'user_' + Math.random().toString(36).substring(2, 9);
+      localStorage.setItem('realm_user_id', currentUserId);
+    }
+
+    if (!currentUsername) {
+      currentUsername = 'Warlock_' + Math.floor(Math.random() * 8999 + 1000);
+      localStorage.setItem('realm_username', currentUsername);
+    }
+
+    document.getElementById('displayUsername').innerText = currentUsername;
+
+    let activeChatId = 'global';
+    let activeChatTitle = 'Global Chat';
+    let unsubscribeMessages = null;
+    let unsubscribeTyping = null;
+    let removedContacts = JSON.parse(localStorage.getItem('realm_removed_contacts') || '[]');
+
+    const userRef = db.collection('users').doc(currentUserId);
+    function updateUserPresence() {
+      userRef.set({
+        username: currentUsername,
+        lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+        online: true
+      }, { merge: true });
+    }
+
+    updateUserPresence();
+    setInterval(updateUserPresence, 30000);
+
+    window.addEventListener('beforeunload', () => {
+      userRef.update({ online: false });
+    });
+
+    // Listen to global user statuses to update badges
+    db.collection('users').onSnapshot(snapshot => {
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const userId = doc.id;
+        const badges = document.querySelectorAll(`[data-user-id="${userId}"] .avatar-status-badge, #globalOnlineIndicator`);
+        badges.forEach(badge => {
+          badge.style.backgroundColor = data.online ? '#22c55e' : '#777';
+        });
+      });
+    });
+
+    function changeUsername() {
+      const newName = prompt('Enter your new Realm handle:', currentUsername);
+      if (newName && newName.trim() !== '') {
+        currentUsername = newName.trim();
+        localStorage.setItem('realm_username', currentUsername);
+        document.getElementById('displayUsername').innerText = currentUsername;
+        updateUserPresence();
+      }
+    }
+
+    const themes = ['', 'theme-purple', 'theme-blue'];
+    let currentThemeIdx = 0;
+
+    function cycleTheme() {
+      currentThemeIdx = (currentThemeIdx + 1) % themes.length;
+      document.body.className = themes[currentThemeIdx];
+      
+      document.getElementById('currentChatAvatar').innerHTML = getEarthMapSVG();
+      document.getElementById('globalAvatarContainer').innerHTML = getEarthMapSVG();
+    }
+
+    function toggleFog() {
+      const fog = document.getElementById('fogContainer');
+      fog.classList.toggle('active');
+    }
+
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    let windGain = null, windOsc = null, windLfo = null;
+    let isMelodyPlaying = false;
+    let fireNode = null, fireGain = null;
+    let fireRumbleOsc = null, fireRumbleGain = null;
+    let fireCrackleInterval = null;
+
+    /* 1. SMOOTH COLD WIND */
+    function toggleWind() {
+      const chip = document.getElementById('chipWind');
+      const ctx = getAudioContext();
+
+      if (windGain) {
+        windGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.5);
+        setTimeout(() => {
+          if (windOsc) { windOsc.stop(); windOsc = null; }
+          if (windLfo) { windLfo.stop(); windLfo = null; }
+          windGain = null;
+        }, 500);
+        chip.classList.remove('active');
+        return;
+      }
+
+      const bufferSize = ctx.sampleRate * 3;
+      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+
+      for (let i = 0; i < bufferSize; i++) {
+        let white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+        output[i] *= 0.11; 
+        b6 = white * 0.115926;
+      }
+
+      const windNoise = ctx.createBufferSource();
+      windNoise.buffer = noiseBuffer;
+      windNoise.loop = true;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 280;
+
+      const lfo = ctx.createOscillator();
+      lfo.frequency.value = 0.15;
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.value = 180;
+      lfo.connect(lfoGain);
+      lfoGain.connect(filter.frequency);
+
+      windGain = ctx.createGain();
+      windGain.gain.setValueAtTime(0.01, ctx.currentTime);
+      windGain.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + 1.2);
+
+      windNoise.connect(filter);
+      filter.connect(windGain);
+      windGain.connect(ctx.destination);
+
+      windNoise.start();
+      lfo.start();
+      windOsc = windNoise;
+      windLfo = lfo;
+      chip.classList.add('active');
+    }
+
+    let pianoFadeInterval = null;
+
+    function fadeAudio(audio, target, duration, onComplete) {
+      clearInterval(pianoFadeInterval);
+      const steps = 20;
+      const stepTime = duration / steps;
+      const startVol = audio.volume;
+      const diff = target - startVol;
+      let count = 0;
+      pianoFadeInterval = setInterval(() => {
+        count++;
+        audio.volume = Math.max(0, Math.min(1, startVol + diff * (count / steps)));
+        if (count >= steps) {
+          clearInterval(pianoFadeInterval);
+          if (onComplete) onComplete();
+        }
+      }, stepTime);
+    }
+
+    function togglePianoMelody() {
+      const chip = document.getElementById('chipBell');
+      const audio = document.getElementById('darkPianoAudio');
+
+      if (isMelodyPlaying) {
+        isMelodyPlaying = false;
+        fadeAudio(audio, 0, 500, () => audio.pause());
+        chip.classList.remove('active');
+        return;
+      }
+
+      isMelodyPlaying = true;
+      audio.volume = 0;
+      audio.play().catch(err => console.warn('Playback blocked:', err));
+      fadeAudio(audio, 0.6, 800);
+      chip.classList.add('active');
+    }
+
+    function toggleEmbers() {
+      const chip = document.getElementById('chipEmbers');
+      const ctx = getAudioContext();
+
+      if (fireGain) {
+        fireGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.5);
+        if (fireRumbleGain) fireRumbleGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.5);
+        clearInterval(fireCrackleInterval);
+        fireCrackleInterval = null;
+        setTimeout(() => {
+          if (fireNode) { fireNode.stop(); fireNode = null; }
+          if (fireRumbleOsc) { fireRumbleOsc.stop(); fireRumbleOsc = null; }
+          fireGain = null;
+          fireRumbleGain = null;
+        }, 500);
+        chip.classList.remove('active');
+        return;
+      }
+
+      const bufferSize = ctx.sampleRate * 2;
+      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+
+      for (let i = 0; i < bufferSize; i++) {
+        const crackle = (Math.random() * 2 - 1) * (Math.random() > 0.9 ? 1.1 : 0.13);
+        output[i] = crackle;
+      }
+
+      fireNode = ctx.createBufferSource();
+      fireNode.buffer = noiseBuffer;
+      fireNode.loop = true;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 2600;
+
+      fireGain = ctx.createGain();
+      fireGain.gain.setValueAtTime(0.01, ctx.currentTime);
+      fireGain.gain.exponentialRampToValueAtTime(0.32, ctx.currentTime + 1);
+
+      fireNode.connect(filter);
+      filter.connect(fireGain);
+      fireGain.connect(ctx.destination);
+      fireNode.start();
+
+      fireRumbleOsc = ctx.createOscillator();
+      fireRumbleOsc.type = 'sawtooth';
+      fireRumbleOsc.frequency.value = 55;
+
+      const rumbleFilter = ctx.createBiquadFilter();
+      rumbleFilter.type = 'lowpass';
+      rumbleFilter.frequency.value = 120;
+
+      fireRumbleGain = ctx.createGain();
+      fireRumbleGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      fireRumbleGain.gain.exponentialRampToValueAtTime(0.05, ctx.currentTime + 1.5);
+
+      fireRumbleOsc.connect(rumbleFilter);
+      rumbleFilter.connect(fireRumbleGain);
+      fireRumbleGain.connect(ctx.destination);
+      fireRumbleOsc.start();
+
+      fireCrackleInterval = setInterval(() => {
+        if (Math.random() > 0.55) {
+          const popDur = 0.03 + Math.random() * 0.05;
+          const popBuffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * popDur), ctx.sampleRate);
+          const popData = popBuffer.getChannelData(0);
+          for (let i = 0; i < popData.length; i++) {
+            popData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * popDur * 0.25));
+          }
+
+          const pop = ctx.createBufferSource();
+          pop.buffer = popBuffer;
+
+          const popFilter = ctx.createBiquadFilter();
+          popFilter.type = 'bandpass';
+          popFilter.frequency.value = 900 + Math.random() * 2200;
+          popFilter.Q.value = 1.2;
+
+          const popGain = ctx.createGain();
+          popGain.gain.value = 0.25 + Math.random() * 0.35;
+
+          pop.connect(popFilter);
+          popFilter.connect(popGain);
+          popGain.connect(ctx.destination);
+          pop.start();
+        }
+      }, 140);
+
+      chip.classList.add('active');
+    }
+
+    function parseSpells(text) {
+      if (!text) return '';
+      let escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      
+      escaped = escaped.replace(/\[fire\](.*?)\[\/fire\]/gi, '<span class="spell-fire">$1</span>');
+      escaped = escaped.replace(/\[shake\](.*?)\[\/shake\]/gi, '<span class="spell-shake">$1</span>');
+      escaped = escaped.replace(/\[glitch\](.*?)\[\/glitch\]/gi, '<span class="spell-glitch">$1</span>');
+
+      return escaped;
+    }
+
+    function convertInputToGothic() {
+      const input = document.getElementById('messageInput');
+      const gothicMap = {
+        'a':'𝔞','b':'𝔟','c':'𝔠','d':'𝔡','e':'𝔢','f':'𝔣','g':'𝔤','h':'𝔥','i':'𝔦','j':'𝔟','k':'𝔨','l':'𝔩','m':'𝔪',
+        'n':'𝔫','o':'𝔬','p':'𝔭','q':'𝔮','r':'𝔯','s':'𝔰','t':'𝔱','u':'𝔲','v':'𝔳','w':'𝔴','x':'𝔵','y':'𝔶','z':'𝔷',
+        'A':'𝔄','B':'𝔅','C':'ℭ','D':'𝔇','E':'𝔈','F':'𝔉','G':'𝔤','H':'ℌ','I':'ℑ','J':'𝔍','K':'𝔏','L':'𝔍','M':'𝔍',
+        'N':'𝔝','O':'𝔒','P':'𝔓','Q':'𝔔','R':'ℜ','S':'𝔖','T':'𝔗','U':'𝔘','V':'𝔙','W':'𝔚','X':'𝔛','Y':'𝔜','Z':'ℨ'
+      };
+      input.value = input.value.split('').map(char => gothicMap[char] || char).join('');
+    }
+
+    function insertSpellTag(type) {
+      const input = document.getElementById('messageInput');
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const selected = input.value.substring(start, end) || 'spell text';
+      const replacement = `[${type}]${selected}[/${type}]`;
+      
+      input.value = input.value.substring(0, start) + replacement + input.value.substring(end);
+      input.focus();
+    }
+
+    function switchChat(chatId, title, avatarSvg) {
+      activeChatId = chatId;
+      activeChatTitle = title;
+
+      document.getElementById('currentChatTitle').innerText = title;
+      document.getElementById('currentChatAvatar').innerHTML = avatarSvg;
+
+      document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+      const activeEl = document.getElementById(`chat-item-${chatId}`);
+      if (activeEl) activeEl.classList.add('active');
+
+      loadMessages();
+      setupTypingListener();
+      closeMobileSidebar();
+    }
+
+    // Typing Feature Logic
+    let typingTimer = null;
+    function handleTypingInput() {
+      const typingRef = db.collection('chats').doc(activeChatId).collection('typing').doc(currentUserId);
+      typingRef.set({ typing: true, name: currentUsername });
+      
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => {
+        typingRef.set({ typing: false, name: currentUsername });
+      }, 2000);
+    }
+
+    function setupTypingListener() {
+      if (unsubscribeTyping) unsubscribeTyping();
+      const typingBar = document.getElementById('typingBar');
+      typingBar.innerText = '';
+
+      unsubscribeTyping = db.collection('chats').doc(activeChatId).collection('typing').onSnapshot(snapshot => {
+        let typingUsers = [];
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          if (doc.id !== currentUserId && data.typing) {
+            typingUsers.push(data.name);
+          }
+        });
+
+        if (typingUsers.length > 0) {
+          typingBar.innerText = `${typingUsers.join(', ')} ${typingUsers.length === 1 ? 'is' : 'are'} typing...`;
+        } else {
+          typingBar.innerText = '';
+        }
+      });
+    }
+
+    // Scroll to Bottom Logic
+    const messagesArea = document.getElementById('messagesArea');
+    const scrollBottomBtn = document.getElementById('scrollBottomBtn');
+
+    messagesArea.addEventListener('scroll', () => {
+      const distanceToBottom = messagesArea.scrollHeight - messagesArea.scrollTop - messagesArea.clientHeight;
+      if (distanceToBottom > 150) {
+        scrollBottomBtn.style.display = 'block';
+      } else {
+        scrollBottomBtn.style.display = 'none';
+      }
+    });
+
+    function scrollToBottom() {
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+      scrollBottomBtn.style.display = 'none';
+    }
+
+    function loadMessages() {
+      if (unsubscribeMessages) unsubscribeMessages();
+      messagesArea.innerHTML = '';
+
+      unsubscribeMessages = db.collection('chats')
+        .doc(activeChatId)
+        .collection('messages')
+        .orderBy('timestamp', 'asc')
+        .onSnapshot(snapshot => {
+          let wasAtBottom = messagesArea.scrollHeight - messagesArea.scrollTop - messagesArea.clientHeight < 100;
+          
+          snapshot.docChanges().forEach(change => {
+            if (change.type === 'added') {
+              renderMessage(change.doc.id, change.doc.data());
+            } else if (change.type === 'removed') {
+              const msgEl = document.getElementById(`msg-${change.doc.id}`);
+              if (msgEl) msgEl.remove();
+            }
+          });
+
+          if (wasAtBottom || snapshot.docChanges.some(c => c.type === 'added' && c.doc.data().senderId === currentUserId)) {
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+            scrollBottomBtn.style.display = 'none';
+          } else {
+            const distanceToBottom = messagesArea.scrollHeight - messagesArea.scrollTop - messagesArea.clientHeight;
+            if (distanceToBottom > 150) {
+              scrollBottomBtn.style.display = 'block';
+            }
+          }
+        });
+    }
+
+    function renderMessage(id, data) {
+      const isSent = data.senderId === currentUserId;
+      const msgDiv = document.createElement('div');
+      msgDiv.id = `msg-${id}`;
+      msgDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+
+      if (data.isGhost) {
+        msgDiv.classList.add('ghost-decay');
+        setTimeout(() => {
+          db.collection('chats').doc(activeChatId).collection('messages').doc(id).delete().catch(() => {});
+        }, 10000);
+      }
+
+      const timeStr = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'just now';
+      const showDeleteBtn = isSent && !data.isGhost;
+
+      msgDiv.innerHTML = `
+        <span class="msg-sender-name">${data.senderName}</span>
+        <div>${parseSpells(data.text)}</div>
+        <div class="msg-footer-row">
+          <span class="msg-time">${timeStr}</span>
+          <div class="msg-footer-right">
+            ${showDeleteBtn ? `<button class="delete-msg-btn" onclick="deleteMessage('${id}')" title="Delete message">×</button>` : ''}
+          </div>
+        </div>
+      `;
+
+      messagesArea.appendChild(msgDiv);
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const isGhost = document.getElementById('ghostCheckbox').checked;
+      const text = input.value.trim();
+
+      if (!text) return;
+
+      db.collection('chats').doc(activeChatId).collection('messages').add({
+        text: text,
+        senderId: currentUserId,
+        senderName: currentUsername,
+        isGhost: isGhost,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      // Clear typing indicator status instantly on send
+      db.collection('chats').doc(activeChatId).collection('typing').doc(currentUserId).set({ typing: false, name: currentUsername });
+
+      input.value = '';
+    }
+
+    function deleteMessage(msgId) {
+      db.collection('chats').doc(activeChatId).collection('messages').doc(msgId).delete();
+    }
+
+    function handleKeyPress(e) {
+      if (e.key === 'Enter') sendMessage();
+    }
+
+    function openPersonalChatPrompt() {
+      const targetUser = prompt("Enter the handle or ID of the spellcaster you wish to message:");
+      if (!targetUser) return;
+
+      const targetId = 'dm_' + [currentUserId, targetUser.replace(/\s+/g, '_')].sort().join('_');
+      createContactItem(targetId, targetUser);
+      switchChat(targetId, targetUser, getEarthMapSVG());
+    }
+
+    function createContactItem(id, name) {
+      const container = document.getElementById('usersContainer');
+      if (document.getElementById(`chat-item-${id}`)) return;
+
+      const item = document.createElement('div');
+      item.className = 'chat-item';
+      item.id = `chat-item-${id}`;
+      item.setAttribute('data-user-id', id);
+      item.onclick = () => switchChat(id, name, getEarthMapSVG());
+
+      item.innerHTML = `
+        <div class="item-avatar">
+          ${getEarthMapSVG()}
+          <span class="avatar-status-badge"></span>
+        </div>
+        <div class="item-details">
+          <span class="item-name">${name}</span>
+          <span class="item-subtext">Direct Whisper</span>
+        </div>
+        <button class="remove-contact-btn" onclick="removeContact(event, '${id}')" title="Hide contact">×</button>
+      `;
+
+      container.appendChild(item);
+    }
+
+    function removeContact(e, id) {
+      e.stopPropagation();
+      const el = document.getElementById(`chat-item-${id}`);
+      if (el) el.remove();
+      removedContacts.push(id);
+      localStorage.setItem('realm_removed_contacts', JSON.stringify(removedContacts));
+    }
+
+    // Reset button with confirmation prompt
+    function resetRemovedContacts() {
+      const confirmed = window.confirm("Are you sure you want to restore your hidden contacts? This will reset your contact list.");
+      if (confirmed) {
+        localStorage.removeItem('realm_removed_contacts');
+        removedContacts = [];
+        document.getElementById('usersContainer').innerHTML = '';
+      }
+    }
+
+    function toggleMobileSidebar() {
+      document.getElementById('appLayout').classList.toggle('show-sidebar');
+    }
+
+    function closeMobileSidebar() {
+      document.getElementById('appLayout').classList.remove('show-sidebar');
+    }
+
+    loadMessages();
+    setupTypingListener();
+  </script>
+</body>
+</html>
